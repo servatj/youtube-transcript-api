@@ -13,9 +13,18 @@ load_dotenv()
 app = FastAPI()
 assistant = OpenAIAssistant(api_key=os.getenv("OPENAI_API_KEY"))  # Get the OpenAI API key from environment variables
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+@app.get("/health")
+def health_check():
+  """
+  Health check endpoint to provide basic metrics.
+  """
+  metrics = {
+    "status": "healthy",
+    "uptime": os.popen('uptime').read().strip(),
+    "disk_usage": os.popen('df -h /').read().strip(),
+    "memory_usage": os.popen('free -h').read().strip()
+  }
+  return JSONResponse(content=metrics)
 
 @app.get("/transcript/{video_id}")
 async def get_transcript(video_id: str, summarize: bool = False, analyze: bool = False):

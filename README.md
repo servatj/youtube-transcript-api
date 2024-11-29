@@ -14,7 +14,7 @@ A FastAPI-based project for fetching YouTube video transcripts and processing th
 
 ## Requirements
 
-- Python 3.8+
+- Python 3.12+
 - pip (Python package manager)
 
 ---
@@ -106,6 +106,7 @@ uvicorn app.__init__:app --reload
      }
      ```
 
+you can find more endpoint in the docs using swagger as explained later in this readme.
 ---
 
 ## Development

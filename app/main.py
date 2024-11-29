@@ -66,3 +66,4 @@ async def get_transcript(video_id: str, summarize: bool = False, analyze: bool =
         # Clean up the file after serving
         if os.path.exists(file_name):
             os.remove(file_name)
+ 

@@ -156,4 +156,4 @@ This project is licensed under the MIT License.
 ## Author
 
 **Josep Servat**  
-For any queries, contact at [your-email@example.com].
+For any queries, contact at DM on x @servatj or linkedin https://www.linkedin.com/in/servatj/.

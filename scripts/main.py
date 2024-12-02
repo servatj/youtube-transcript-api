@@ -4,7 +4,7 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api._errors import CouldNotRetrieveTranscript, TranscriptsDisabled
 import os
 from dotenv import load_dotenv
-from app.utils.assistant import OpenAIAssistant  # Import the assistant class
+from scripts.assistant import OpenAIAssistant  # Import the assistant class
 
 
 # Load environment variables from a .env file

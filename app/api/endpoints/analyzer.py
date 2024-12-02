@@ -1,20 +1,13 @@
 # app/api/endpoints/analyze.py
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import List, Dict
+from app.models.transcript import TranscriptRequest
 from app.services.openai_service import analyze_transcript
 
 router = APIRouter()
 
 # Define the request body schema
-class TranscriptItem(BaseModel):
-    text: str
-    start: float
-    duration: float
 
-class TranscriptRequest(BaseModel):
-    transcript: List[TranscriptItem]
 
 @router.post("/structured")
 async def analyze_transcript_endpoint(request: TranscriptRequest):
@@ -37,7 +30,10 @@ async def analyze_transcript_endpoint(request: TranscriptRequest):
     except RuntimeError as e:
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred: {str(e)}"
+        )
+
 
 @router.post("/raw")
 async def analyze_transcript_endpoint(transcript: str):
@@ -56,6 +52,6 @@ async def analyze_transcript_endpoint(transcript: str):
     except RuntimeError as e:
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
-    
-
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred: {str(e)}"
+        )

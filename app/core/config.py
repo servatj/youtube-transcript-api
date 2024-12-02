@@ -12,10 +12,12 @@ if ENV == "development":
 else:
     load_dotenv(".env")
 
+
 class Settings:
     """
     Centralized settings for the application, including API keys and database configuration.
     """
+
     # General application settings
     ENV: str = ENV
     APP_NAME: str = os.getenv("APP_NAME", "YouTube Transcript API")
@@ -41,6 +43,7 @@ class Settings:
             f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}"
             f"@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
         )
+
 
 # Create a settings instance to use throughout the application
 settings = Settings()

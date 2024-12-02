@@ -3,6 +3,7 @@ from youtube_transcript_api import YouTubeTranscriptApi
 
 router = APIRouter()
 
+
 @router.get("/{video_id}")
 async def fetch_transcript(video_id: str):
     """

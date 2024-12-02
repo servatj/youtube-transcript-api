@@ -5,6 +5,7 @@ from mysql.connector import connect, Error
 from app.core.config import settings
 import json
 
+
 class AnalyzeRepository:
     """
     Handles CRUD operations for analysis results.

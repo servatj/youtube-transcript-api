@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
     name="youtube-transcript-api",
@@ -21,6 +21,8 @@ setup(
         "yoyo-migrations",
         "openai",
         "pydantic",
+        "pre-commit",
+        "black",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

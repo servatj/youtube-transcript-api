@@ -1,0 +1,14 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 23.9.1  # Replace with the latest version
+    hooks:
+      - id: black
+  - repo: https://github.com/PyCQA/flake8
+    rev: 6.1.0  # Replace with the latest version
+    hooks:
+      - id: flake8
+        args: [--ignore=E501]
+  - repo: https://github.com/timothycrosley/isort
+    rev: 5.12.0  # Replace with the latest version
+    hooks:
+      - id: isort

@@ -57,11 +57,11 @@ def analyze_transcript(transcript: str) -> str:
             ],
             max_tokens=200,  # Optional: Limit the length of the analysis response
         )
-        return response.choices[0].message.content.strip(transcript: str, user_analysis_description: str) -> str:
+        return response.choices[0].message.content.strip(transcript)
     except Exception as e:
         raise RuntimeError(f"Failed to analyze transcript: {str(e)}")
     
-def analyze_trasncript_variable_content(transctipt: str, user_analysis_description: str) -> str:
+def analyze_trasncript_variable_content(transcript: str, user_analysis_description: str) -> str:
     """
     Analyzes a given transcript using OpenAI's latest model.
 

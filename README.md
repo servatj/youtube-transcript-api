@@ -56,6 +56,26 @@ Replace `your_openai_api_key_here` with your actual OpenAI API key.
 
 ## Run the Application
 
+### 0. Prepare the Infrastructure
+
+Ensure you have Docker and Docker Compose installed on your machine. Then, run the following command to set up the necessary infrastructure:
+
+```bash
+docker-compose up -d
+```
+
+This will start the required services defined in your `docker-compose.yml` file.
+
+#### Apply Database Migrations
+
+Run the following command to apply database migrations using `yoyo-migrations`:
+
+```bash
+yoyo apply
+```
+
+Replace `username`, `password`, and `youtube_transcripts` with your actual database credentials.
+
 ### 1. Start the Server
 
 Run the FastAPI application using Uvicorn:

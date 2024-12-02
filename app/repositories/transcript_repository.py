@@ -1,11 +1,13 @@
 # app/repositories/transcript_repository.py
 
-from typing import List, Optional
-import psycopg2
-from psycopg2 import sql, Error
-from app.core.config import settings
-from app.models.transcript import TranscriptItem
 import json
+from typing import Optional
+
+import psycopg2
+from psycopg2 import Error
+
+from app.core.config import settings
+from app.models.transcript import TranscriptRow, TranscriptYoutubeResponse
 
 
 class TranscriptRepository:
@@ -22,7 +24,9 @@ class TranscriptRepository:
             port=settings.DB_PORT,
         )
 
-    def save_transcript(self, transcript: TranscriptItem) -> int:
+    def save_transcript(
+        self, video_id, transcript: TranscriptYoutubeResponse, transcript_text: str
+    ) -> int:
         """
         Inserts a transcript into the database.
 
@@ -32,23 +36,22 @@ class TranscriptRepository:
         Returns:
           int: The ID of the newly created transcript.
         """
+        method_name = "transcript_repository/save_transcript"
+        print(f"{method_name} Saving transcript: {transcript} - start")
         try:
             cursor = self.connection.cursor()
             query = """
-      INSERT INTO analyses (video_id, transcript)
-      VALUES (%s, %s, %s)
-      RETURNING id
-      """
+                INSERT INTO transcripts (video_id, transcript, transcript_json)
+                VALUES (%s, %s, %s)
+                RETURNING id
+                """
             cursor.execute(
                 query,
-                (
-                    transcript.video_id,
-                    transcript.transcript,
-                    json.dumps(transcript.analysis),
-                ),
+                (video_id, transcript_text, json.dumps(transcript)),
             )
             self.connection.commit()
             transcript_id = cursor.fetchone()[0]
+            print(f"{method_name} - end Transcript saved with ID: {transcript_id}")
             return transcript_id
         except Error as e:
             print(f"Error creating transcript: {e}")
@@ -56,7 +59,7 @@ class TranscriptRepository:
         finally:
             cursor.close()
 
-    def get_transcript(self, transcript_id: int) -> Optional[TranscriptItem]:
+    def get_transcript(self, transcript_id: str) -> Optional[TranscriptRow]:
         """
         Fetches a transcript by ID.
 
@@ -68,13 +71,13 @@ class TranscriptRepository:
         """
         try:
             cursor = self.connection.cursor()
-            query = "SELECT * FROM analyses WHERE id = %s"
-            cursor.execute(query, (transcript_id,))
+            query = "SELECT * FROM transcripts WHERE video_id = %s"
+            cursor.execute(query, (transcript_id))
             record = cursor.fetchone()
             if record:
                 record = dict(zip([desc[0] for desc in cursor.description], record))
-                record["analysis"] = json.loads(record["analysis"])
-                return Transcript(**record)
+                record["transcript"] = json.loads(record["transcript"])
+                return TranscriptRow(**record)
             return None
         except Error as e:
             print(f"Error fetching transcript: {e}")

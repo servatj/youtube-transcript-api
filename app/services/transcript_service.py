@@ -1,10 +1,12 @@
 # app/services/transcript_service.py
 
 from youtube_transcript_api import YouTubeTranscriptApi
+
+from app.models.transcript import TranscriptRow, TranscriptYoutubeResponse
 from app.repositories.transcript_repository import TranscriptRepository
 
 
-def fetch_transcript(video_id: str) -> dict:
+async def fetch_transcript(video_id: str) -> TranscriptYoutubeResponse:
     """Fetches the transcript for a given YouTube video ID.
 
     Args:
@@ -16,6 +18,7 @@ def fetch_transcript(video_id: str) -> dict:
     Raises:
         RuntimeError: If fetching the transcript fails.
     """
+    method_name = "transcript_service/fetch_transcript"
     try:
         repository = TranscriptRepository()
         transcript = YouTubeTranscriptApi.get_transcript(video_id)
@@ -24,16 +27,36 @@ def fetch_transcript(video_id: str) -> dict:
             [f"{item['start']:.2f}s: {item['text']}" for item in transcript]
         )
 
-        transcript_dict = {
-            "video_id": video_id,
-            "transcript": transcript,
-            "transcript_text": transcript_text,
-        }
-
-        repository.save_transcript(transcript_dict)
-
-        print(transcript_text)
-
+        repository.save_transcript(video_id, transcript, transcript_text)
+        print("end")
         return transcript
     except Exception as e:
-        raise RuntimeError(f"Failed to fetch transcript: {str(e)}")
+        raise RuntimeError(f"{method_name} Failed to fetch transcript: {str(e)}")
+
+
+async def get_transcript_row(video_id: str) -> TranscriptRow:
+    """Fetches a transcript by video ID.
+
+    Args:
+        video_id (str): The ID of the video.
+
+    Returns:
+        TranscriptRow: The transcript record.
+
+    Raises:
+        RuntimeError: If fetching the transcript fails.
+    """
+    method_name = "transcript_service/get_transcript_row"
+    try:
+        repository = TranscriptRepository()
+        transcript = repository.get_transcript(video_id)
+        if transcript:
+            return transcript
+        raise RuntimeError(
+            f"{method_name} Transcript not found for video ID: {video_id}"
+        )
+    except Exception as e:
+        raise RuntimeError(f"{method_name} Failed to fetch transcript: {str(e)}")
+
+
+# app/repositories/transcript_repository.py

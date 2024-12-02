@@ -20,6 +20,10 @@ async def fetch_transcript(video_id: str) -> TranscriptYoutubeResponse:
     """
     method_name = "transcript_service/fetch_transcript"
     try:
+        # isTranscriptExist = await transcript_exists(video_id);
+        # if isTranscriptExist:
+        #     return isTranscriptExist.transcript;
+
         repository = TranscriptRepository()
         transcript = YouTubeTranscriptApi.get_transcript(video_id)
 
@@ -27,7 +31,7 @@ async def fetch_transcript(video_id: str) -> TranscriptYoutubeResponse:
             [f"{item['start']:.2f}s: {item['text']}" for item in transcript]
         )
 
-        repository.save_transcript(video_id, transcript, transcript_text)
+        await repository.save_transcript(video_id, transcript, transcript_text)
         print("end")
         return transcript
     except Exception as e:
@@ -49,7 +53,7 @@ async def get_transcript_row(video_id: str) -> TranscriptRow:
     method_name = "transcript_service/get_transcript_row"
     try:
         repository = TranscriptRepository()
-        transcript = repository.get_transcript(video_id)
+        transcript = await repository.get_transcript(video_id)
         if transcript:
             return transcript
         raise RuntimeError(
@@ -59,4 +63,25 @@ async def get_transcript_row(video_id: str) -> TranscriptRow:
         raise RuntimeError(f"{method_name} Failed to fetch transcript: {str(e)}")
 
 
-# app/repositories/transcript_repository.py
+async def transcript_exists(video_id: str) -> bool:
+    """Check if a transcript exists in the database.
+
+    Args:
+        video_id (str): The video ID.
+
+    Returns:
+        bool: True if the transcript exists, False otherwise.
+    """
+    method_name = "transcript_service/transcript_exists"
+    try:
+        repository = TranscriptRepository()
+        transcript = await repository.get_transcript(video_id)
+
+        if transcript:
+            return True
+
+        return False
+    except Exception as e:
+        raise RuntimeError(
+            f"{method_name} Failed to check transcript existence: {str(e)}"
+        )

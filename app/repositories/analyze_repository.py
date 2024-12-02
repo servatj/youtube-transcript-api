@@ -1,7 +1,8 @@
 # app/repositories/analyze_repository.py
 
-from typing import List, Optional
-from mysql.connector import connect, Error
+from typing import Optional
+import psycopg2
+from psycopg2 import Error
 from app.core.config import settings
 import json
 
@@ -12,11 +13,11 @@ class AnalyzeRepository:
     """
 
     def __init__(self):
-        self.connection = connect(
+        self.connection = psycopg2.connect(
             host=settings.DB_HOST,
             user=settings.DB_USER,
             password=settings.DB_PASSWORD,
-            database=settings.DB_NAME,
+            dbname=settings.DB_NAME,
             port=settings.DB_PORT,
         )
 
@@ -36,10 +37,12 @@ class AnalyzeRepository:
             query = """
             INSERT INTO analysis_results (video_id, analysis)
             VALUES (%s, %s)
+            RETURNING id
             """
             cursor.execute(query, (video_id, json.dumps(analysis)))
             self.connection.commit()
-            return cursor.lastrowid
+            analysis_id = cursor.fetchone()[0]
+            return analysis_id
         except Error as e:
             print(f"Error saving analysis: {e}")
             raise
@@ -57,11 +60,12 @@ class AnalyzeRepository:
             Optional[dict]: The analysis data, or None if not found.
         """
         try:
-            cursor = self.connection.cursor(dictionary=True)
+            cursor = self.connection.cursor()
             query = "SELECT * FROM analysis_results WHERE id = %s"
             cursor.execute(query, (analysis_id,))
             record = cursor.fetchone()
             if record:
+                record = dict(record)
                 record["analysis"] = json.loads(record["analysis"])
                 return record
             return None

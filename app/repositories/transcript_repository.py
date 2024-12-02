@@ -24,7 +24,7 @@ class TranscriptRepository:
             port=settings.DB_PORT,
         )
 
-    def save_transcript(
+    async def save_transcript(
         self, video_id, transcript: TranscriptYoutubeResponse, transcript_text: str
     ) -> int:
         """
@@ -59,7 +59,7 @@ class TranscriptRepository:
         finally:
             cursor.close()
 
-    def get_transcript(self, transcript_id: str) -> Optional[TranscriptRow]:
+    async def get_transcript(self, transcript_id: str) -> Optional[TranscriptRow]:
         """
         Fetches a transcript by ID.
 
@@ -72,15 +72,14 @@ class TranscriptRepository:
         try:
             cursor = self.connection.cursor()
             query = "SELECT * FROM transcripts WHERE video_id = %s"
-            cursor.execute(query, (transcript_id))
+            cursor.execute(query, (transcript_id,))
             record = cursor.fetchone()
             if record:
-                record = dict(zip([desc[0] for desc in cursor.description], record))
-                record["transcript"] = json.loads(record["transcript"])
-                return TranscriptRow(**record)
+                return record
             return None
         except Error as e:
             print(f"Error fetching transcript: {e}")
             raise
         finally:
+            print("Closing cursor")
             cursor.close()

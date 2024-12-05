@@ -1,12 +1,12 @@
-# app/services/transcript_service.py
-
 from youtube_transcript_api import YouTubeTranscriptApi
 
 from app.models.transcript import TranscriptRow, TranscriptYoutubeResponse
 from app.repositories.transcript_repository import TranscriptRepository
 
 
-async def fetch_transcript(video_id: str) -> TranscriptYoutubeResponse:
+async def process_transcript(
+    video_id: str, repository: TranscriptRepository
+) -> TranscriptYoutubeResponse:
     """Fetches the transcript for a given YouTube video ID.
 
     Args:
@@ -20,11 +20,10 @@ async def fetch_transcript(video_id: str) -> TranscriptYoutubeResponse:
     """
     method_name = "transcript_service/fetch_transcript"
     try:
-        # isTranscriptExist = await transcript_exists(video_id);
-        # if isTranscriptExist:
-        #     return isTranscriptExist.transcript;
+        transcriptDb = await get_transcript_row(video_id, repository)
+        if transcriptDb:
+            return transcriptDb
 
-        repository = TranscriptRepository()
         transcript = YouTubeTranscriptApi.get_transcript(video_id)
 
         transcript_text = "\n".join(
@@ -38,7 +37,9 @@ async def fetch_transcript(video_id: str) -> TranscriptYoutubeResponse:
         raise RuntimeError(f"{method_name} Failed to fetch transcript: {str(e)}")
 
 
-async def get_transcript_row(video_id: str) -> TranscriptRow:
+async def get_transcript_row(
+    video_id: str, repository: TranscriptRepository
+) -> TranscriptRow:
     """Fetches a transcript by video ID.
 
     Args:
@@ -52,7 +53,6 @@ async def get_transcript_row(video_id: str) -> TranscriptRow:
     """
     method_name = "transcript_service/get_transcript_row"
     try:
-        repository = TranscriptRepository()
         transcript = await repository.get_transcript(video_id)
         if transcript:
             return transcript
@@ -63,7 +63,7 @@ async def get_transcript_row(video_id: str) -> TranscriptRow:
         raise RuntimeError(f"{method_name} Failed to fetch transcript: {str(e)}")
 
 
-async def transcript_exists(video_id: str) -> bool:
+async def transcript_exists(video_id: str, repository: TranscriptRepository) -> bool:
     """Check if a transcript exists in the database.
 
     Args:
@@ -74,7 +74,6 @@ async def transcript_exists(video_id: str) -> bool:
     """
     method_name = "transcript_service/transcript_exists"
     try:
-        repository = TranscriptRepository()
         transcript = await repository.get_transcript(video_id)
 
         if transcript:

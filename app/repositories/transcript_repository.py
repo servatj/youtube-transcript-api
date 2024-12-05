@@ -3,10 +3,9 @@
 import json
 from typing import Optional
 
-import psycopg2
+from psycopg2.extensions import connection
 from psycopg2 import Error
 
-from app.core.config import settings
 from app.models.transcript import TranscriptRow, TranscriptYoutubeResponse
 
 
@@ -15,14 +14,14 @@ class TranscriptRepository:
     Handles CRUD operations for transcripts.
     """
 
-    def __init__(self):
-        self.connection = psycopg2.connect(
-            host=settings.DB_HOST,
-            user=settings.DB_USER,
-            password=settings.DB_PASSWORD,
-            dbname=settings.DB_NAME,
-            port=settings.DB_PORT,
-        )
+    def __init__(self, db_client: connection):
+        """
+        Initializes the repository with a database client.
+
+        Args:
+          db_client (connection): A Psycopg2 database connection.
+        """
+        self.connection = db_client
 
     async def save_transcript(
         self, video_id, transcript: TranscriptYoutubeResponse, transcript_text: str

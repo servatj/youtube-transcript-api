@@ -56,9 +56,8 @@ async def get_transcript_row(
         transcript = await repository.get_transcript(video_id)
         if transcript:
             return transcript
-        raise RuntimeError(
-            f"{method_name} Transcript not found for video ID: {video_id}"
-        )
+        raise None
+
     except Exception as e:
         raise RuntimeError(f"{method_name} Failed to fetch transcript: {str(e)}")
 

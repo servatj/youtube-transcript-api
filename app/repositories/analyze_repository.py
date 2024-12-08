@@ -21,7 +21,9 @@ class AnalyzeRepository:
             port=settings.DB_PORT,
         )
 
-    def save_analysis(self, video_id: str, analysis: dict) -> int:
+    async def save_analysis(
+        self, video_id: str, analysis: dict, transcript_id: str
+    ) -> int:
         """
         Inserts an analysis result into the database.
 
@@ -35,11 +37,11 @@ class AnalyzeRepository:
         try:
             cursor = self.connection.cursor()
             query = """
-            INSERT INTO analysis_results (video_id, analysis)
-            VALUES (%s, %s)
+            INSERT INTO analysis_results (transcript_id, video_id, analysis)
+            VALUES (%s, %s, %s)
             RETURNING id
             """
-            cursor.execute(query, (video_id, json.dumps(analysis)))
+            cursor.execute(query, (transcript_id, video_id, json.dumps(analysis)))
             self.connection.commit()
             analysis_id = cursor.fetchone()[0]
             return analysis_id
@@ -49,7 +51,7 @@ class AnalyzeRepository:
         finally:
             cursor.close()
 
-    def get_analysis(self, analysis_id: int) -> Optional[dict]:
+    async def get_analysis(self, analysis_id: int) -> Optional[dict]:
         """
         Fetches an analysis result by ID.
 

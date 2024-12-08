@@ -3,6 +3,7 @@
 import os
 from openai import OpenAI
 from app.core import settings
+from app.repositories.analyze_repository import AnalyzeRepository
 
 # Initialize the OpenAI client with the API key directly from settings or environment variable
 client = OpenAI(api_key=settings.OPENAI_API_KEY or os.getenv("OPENAI_API_KEY"))
@@ -37,12 +38,14 @@ def summarize_transcript(transcript: str) -> str:
             ],
             max_tokens=150,  # Optional: Limit the length of the summary to avoid overly verbose outputs
         )
-        return response.choices[0].message.content.strip()
+        return response.choices[0].message.content
     except Exception as e:
         raise RuntimeError(f"Failed to summarize transcript: {str(e)}")
 
 
-def analyze_transcript(transcript: str) -> str:
+async def analyze_transcript(
+    transcript_id: str, transcript: str, video_id: str, repository: AnalyzeRepository
+) -> str:
     """
     Analyzes a given transcript using OpenAI's latest model.
 
@@ -57,6 +60,7 @@ def analyze_transcript(transcript: str) -> str:
     """
     try:
         # Use the latest model or specify a version if you need to
+        repository = AnalyzeRepository()
         response = client.chat.completions.create(
             model="gpt-4-turbo",  # Adjust to the latest model or version if available
             messages=[
@@ -71,12 +75,17 @@ def analyze_transcript(transcript: str) -> str:
             ],
             max_tokens=200,  # Optional: Limit the length of the analysis response
         )
-        return response.choices[0].message.content.strip(transcript)
+
+        analysis_id = await repository.save_analysis(
+            video_id, response.choices[0].message.content, transcript_id
+        )
+        print(f"Analysis saved with ID: {analysis_id}")
+        return response.choices[0].message.content
     except Exception as e:
         raise RuntimeError(f"Failed to analyze transcript: {str(e)}")
 
 
-def analyze_trasncript_variable_content(
+def analyze_transcript_variable_content(
     transcript: str, user_analysis_description: str
 ) -> str:
     """
@@ -107,6 +116,6 @@ def analyze_trasncript_variable_content(
             ],
             max_tokens=200,  # Optional: Limit the length of the analysis response
         )
-        return response.choices[0].message.content.strip()
+        return response.choices[0].message.content
     except Exception as e:
         raise RuntimeError(f"Failed to analyze transcript: {str(e)}")

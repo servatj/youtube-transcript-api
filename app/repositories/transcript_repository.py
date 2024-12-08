@@ -82,3 +82,29 @@ class TranscriptRepository:
         finally:
             print("Closing cursor")
             cursor.close()
+
+    async def get_transcript_by_video_id(
+        self, video_id: str
+    ) -> Optional[TranscriptRow]:
+        """
+        Fetches a transcript by video ID.
+
+        Args:
+          video_id (str): The video ID of the transcript to fetch.
+
+        Returns:
+          Optional[Transcript]: The transcript record, or None if not found.
+        """
+        try:
+            cursor = self.connection.cursor()
+            query = "SELECT * FROM transcripts WHERE video_id = %s"
+            cursor.execute(query, (video_id,))
+            record = cursor.fetchone()
+            if record:
+                return record
+            return None
+        except Error as e:
+            print(f"Error fetching transcript: {e}")
+            raise
+        finally:
+            cursor.close()

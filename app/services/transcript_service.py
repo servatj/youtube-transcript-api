@@ -21,7 +21,9 @@ async def process_transcript(
     method_name = "transcript_service/fetch_transcript"
     try:
         transcriptDb = await get_transcript_row(video_id, repository)
+        print(transcriptDb)
         if transcriptDb:
+            print("return transcript")
             return transcriptDb
 
         transcript = YouTubeTranscriptApi.get_transcript(video_id)
@@ -56,7 +58,8 @@ async def get_transcript_row(
         transcript = await repository.get_transcript(video_id)
         if transcript:
             return transcript
-        raise None
+
+        return None
 
     except Exception as e:
         raise RuntimeError(f"{method_name} Failed to fetch transcript: {str(e)}")

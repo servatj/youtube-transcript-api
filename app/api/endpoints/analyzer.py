@@ -1,13 +1,17 @@
 # app/api/endpoints/analyze.py
 
 from multiprocessing import connection
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 from app.models.transcript import TranscriptRequest
 from app.repositories.analyze_repository import AnalyzeRepository
 from app.repositories.transcript_repository import TranscriptRepository
-from app.services.openai_service import analyze_transcript
+from app.services.openai_service import (
+    analyze_transcript,
+    analyze_transcript_variable_content,
+)
 from app.services.transcript_service import get_transcript_row
 from app.utils.db_utils import get_db_connection
+from pydantic import BaseModel
 
 router = APIRouter()
 
@@ -64,7 +68,7 @@ async def analyze_transcript_endpoint_raw(transcript: str):
         )
 
 
-@router.get("/analyze-video/{video_id}")
+@router.post("/analyze-video/{video_id}")
 async def analyze_video_endpoint(
     video_id: str, db_client: connection = Depends(get_db_connection)
 ):
@@ -104,6 +108,64 @@ async def analyze_video_endpoint(
             "video_id": video_id,
             "transcript": transcript,
             "analysis": analysis_result,
+        }
+
+    except RuntimeError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred: {str(e)}"
+        )
+
+
+class AnalyzeVideoRequest(BaseModel):
+    user_analysis_description: str
+
+
+@router.post("/analyze-video-with-description/{video_id}")
+async def analyze_video_endpoint_with_description(
+    video_id: str,
+    request: AnalyzeVideoRequest = Body(
+        ...,
+        description="The request body containing the user-provided analysis description",
+    ),
+    db_client: connection = Depends(get_db_connection),
+):
+    """
+    Endpoint to analyze a video by its ID with a user-provided analysis description.
+
+    Args:
+        video_id (str): The video ID to fetch and analyze the transcript for.
+        request (AnalyzeVideoRequest): The request body containing the user-provided analysis description.
+
+    Returns:
+        dict: Analysis results including key topics.
+    """
+    try:
+        # Fetch transcript from the database
+        print(f"Fetching transcript for video ID: {video_id}")
+        repository = TranscriptRepository(db_client)
+        transcript_record = await get_transcript_row(video_id, repository)
+        user_analysis_description = request.user_analysis_description
+
+        if not transcript_record:
+            raise HTTPException(
+                status_code=404, detail=f"No transcript found for video ID {video_id}"
+            )
+
+        transcript = transcript_record[2]
+
+        print(f"Transcript: {transcript}")
+
+        analysis_result = await analyze_transcript_variable_content(
+            {transcript: transcript}, user_analysis_description
+        )
+
+        return {
+            "video_id": video_id,
+            "transcript": transcript,
+            "analysis": analysis_result,
+            "user_analysis_description": request.user_analysis_description,
         }
 
     except RuntimeError as e:

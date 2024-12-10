@@ -85,7 +85,7 @@ async def analyze_transcript(
         raise RuntimeError(f"Failed to analyze transcript: {str(e)}")
 
 
-def analyze_transcript_variable_content(
+async def analyze_transcript_variable_content(
     transcript: str, user_analysis_description: str
 ) -> str:
     """

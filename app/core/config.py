@@ -25,6 +25,7 @@ class Settings:
 
     # OpenAI configuration
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    print(OPENAI_API_KEY)
 
     # Database configuration
     DB_HOST: str = os.getenv("DB_HOST", "localhost")

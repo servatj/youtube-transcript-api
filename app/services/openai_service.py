@@ -2,7 +2,7 @@
 
 import os
 from openai import OpenAI
-from app.core import settings
+from app.core.config import settings
 from app.repositories.analyze_repository import AnalyzeRepository
 
 # Initialize the OpenAI client with the API key directly from settings or environment variable
